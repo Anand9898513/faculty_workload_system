@@ -57,10 +57,14 @@ app.use((req, res) => {
 });
 
 // ── Start Server ────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`🚀 FacultyIQ Server running at http://localhost:${PORT}`);
-});
-
+mongoose.connect(MONGODB_URI)
+  .then(() => {
+    console.log('✅ Connected to MongoDB');
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  })
+  .catch(err => console.error('❌ MongoDB error:', err));
 // ── Seed Database ───────────────────────────────────────────────
 async function seedDatabase() {
   const User    = require('./models/User');
