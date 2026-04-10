@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christian Lyrics -  Telugu & English Christian Songs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #000000;
+            color: #ffffff;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+        }
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .song-card {
+            animation: fadeInUp 0.5s ease-out forwards;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .song-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            background: #1a1a1a !important;
+            box-shadow: 0 10px 40px rgba(255,255,255,0.1);
+        }
+        .song-card.removing {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+        .song-card.adding {
+            animation: bounceIn 0.5s ease-out;
+        }
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+        .ripple:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .ripple:active:after {
+            width: 300px;
+            height: 300px;
+        }
+        .admin-badge {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        }
+        .search-highlight {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+
+<div id="app"></div>
+
+<script>
+    // ==================== DATABASE (Pre-populated from christianlyricz.com) ====================
+    const songsDatabase = [
+        { id: 1, titleTelugu: "న్యాయాధిపతి అయిన దేవుడు", titleEnglish: "God Our Judge", lyricsTelugu: "న్యాయాధిపతి అయిన దేవుడు\nనీతితో తీర్పు తీర్చే దేవుడు\nనా జీవితంలో నీవే న్యాయాధిపతివి\nనిన్నే నమ్ముకుంటున్నాను", lyricsEnglish: "God who is our Judge\nYou judge with righteousness\nIn my life You are the Judge\nI put my trust in You", category: "Worship" },
+        { id: 2, titleTelugu: "నడవాలని యేసు", titleEnglish: "Jesus I Want to Walk", lyricsTelugu: "నడవాలని యేసు నీ మార్గమున\nనడిపించు నన్ను నీ త్రోవలో\nఎడమకు కుడికు తొలగకుండ\nనీ వెంట నడిచెదను", lyricsEnglish: "Jesus I want to walk in Your way\nLead me in Your path\nWithout turning left or right\nI will follow You", category: "Prayer" },
+        { id: 3, titleTelugu: "నమ్మకమైన దేవుడవైన", titleEnglish: "Faithful God You Are", lyricsTelugu: "నమ్మకమైన దేవుడవైన\nనీ వాగ్దానాలు నిజమైనవి\nఎప్పటికీ మారని నీ ప్రేమ\nనిన్ను స్తుతించెదను", lyricsEnglish: "Faithful God You are\nYour promises are true\nYour love never changes\nI will praise You", category: "Worship" },
+        { id: 4, titleTelugu: "నా ప్రాణమా నీకే వందనం", titleEnglish: "My Soul Worship You", lyricsTelugu: "నా ప్రాణమా నీకే వందనం\nనా హృదయమా నీకే ఆరాధన\nనీవు లేని క్షణమైనా\nనేను బ్రతుకలేను ప్రభువా", lyricsEnglish: "My soul worships You\nMy heart adores You\nWithout a moment of You\nI cannot live Lord", category: "Worship" },
+        { id: 5, titleTelugu: "నీ కృప చాలును", titleEnglish: "Your Grace is Enough", lyricsTelugu: "నీ కృప చాలును నాకు\nనీ బలమే చాలును\nనేను బలహీనుడనైనా\nనీవు నాకు బలము", lyricsEnglish: "Your grace is enough for me\nYour strength is enough\nThough I am weak\nYou are my strength", category: "Grace" },
+        { id: 6, titleTelugu: "Way Maker", titleEnglish: "Way Maker", lyricsTelugu: "మార్గము సిద్ధపరచు దేవా\nఅద్భుతాలు చేయు దేవా\nనీ వాగ్దానము నమ్ముదును\nనీవే మార్గము చూపుము", lyricsEnglish: "Way Maker, Miracle Worker\nPromise Keeper, Light in the darkness\nMy God, that is who You are", category: "English" },
+        { id: 7, titleTelugu: "నన్ను కావగ వచ్చిన", titleEnglish: "Came to Save Me", lyricsTelugu: "నన్ను కావగ వచ్చిన యేసయ్యా\nనా పాపాలు మోచుకొని\nశిలువపై ప్రాణాలు ఇచ్చి\nనన్ను రక్షించిన ప్రభువా", lyricsEnglish: "Jesus came to save me\nCarrying my sins\nGave His life on the cross\nLord who saved me", category: "Salvation" },
+        { id: 8, titleTelugu: "నీవే నా దేవుడవు", titleEnglish: "You Are My God", lyricsTelugu: "నీవే నా దేవుడవు\nనీవే నా రక్షకుడవు\nనీవు లేనిదే నేను లేను\nనీవే నా సర్వము", lyricsEnglish: "You are my God\nYou are my Savior\nWithout You I am nothing\nYou are my everything", category: "Worship" }
+    ];
+
+    // Current user state (mock)
+    let currentUser = null;
+    let isAdmin = false;
+
+    // ==================== COMPONENTS ====================
+    
+    // Song Box Component (Clickable box - song name lone untadi)
+    function SongBox({ song, onClick, onDelete, onEdit, isAdminMode }) {
+        const handleDelete = (e) => {
+            e.stopPropagation();
+            if (confirm(`Delete "${song.titleTelugu}"?`)) {
+                const card = document.getElementById(`song-${song.id}`);
+                card.classList.add('removing');
+                setTimeout(() => onDelete(song.id), 300);
+            }
+        };
+        
+        return `
+            <div id="song-${song.id}" class="song-card bg-[#0a0a0a] rounded-xl p-5 cursor-pointer ripple border border-[#222] hover:border-white/30 transition-all relative" onclick="window.showLyrics(${song.id})">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-white mb-2">🎵 ${song.titleTelugu}</h3>
+                        <p class="text-gray-400 text-sm">${song.titleEnglish}</p>
+                        <span class="inline-block mt-2 text-xs px-2 py-1 bg-white/10 rounded-full">${song.category}</span>
+                    </div>
+                    ${isAdminMode ? `
+                        <div class="flex gap-2" onclick="event.stopPropagation()">
+                            <button onclick="window.editSong(${song.id})" class="text-blue-400 hover:text-blue-300 transition p-2">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="(${handleDelete.toString()})()" class="text-red-400 hover:text-red-300 transition p-2">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    // Main App
+    function renderApp() {
+        let searchTerm = '';
+        let selectedSong = null;
+        let showAddForm = false;
+        let songs = [...songsDatabase];
+
+        // Search function
+        window.searchSongs = () => {
+            const searchInput = document.getElementById('searchInput');
+            searchTerm = searchInput.value.toLowerCase();
+            renderSongList();
+        };
+
+        // Show lyrics when box clicked
+        window.showLyrics = (songId) => {
+            const song = songs.find(s => s.id === songId);
+            if (song) {
+                document.getElementById('lyricsPanel').innerHTML = `
+                    <div class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 animate-fadeIn" onclick="if(event.target===this) closeLyrics()">
+                        <div class="bg-[#0a0a0a] rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-8 border border-white/20">
+                            <div class="flex justify-between items-start mb-6">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-white">${song.titleTelugu}</h2>
+                                    <p class="text-gray-400">${song.titleEnglish}</p>
+                                </div>
+                                <button onclick="closeLyrics()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <h3 class="text-lg font-semibold mb-3 text-white/80">తెలుగు Lyrics</h3>
+                                    <p class="text-gray-300 whitespace-pre-line">${song.lyricsTelugu}</p>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold mb-3 text-white/80">English Lyrics</h3>
+                                    <p class="text-gray-300 whitespace-pre-line">${song.lyricsEnglish}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('lyricsPanel').classList.remove('hidden');
+            }
+        };
+
+        window.closeLyrics = () => {
+            document.getElementById('lyricsPanel').classList.add('hidden');
+        };
+
+        // Add new song (Admin only)
+        window.showAddForm = () => {
+            document.getElementById('addFormPanel').innerHTML = `
+                <div class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onclick="if(event.target===this) closeAddForm()">
+                    <div class="bg-[#0a0a0a] rounded-2xl max-w-2xl w-full p-8 border border-white/20">
+                        <h2 class="text-2xl font-bold mb-6">➕ Add New Song</h2>
+                        <form onsubmit="window.addNewSong(event)">
+                            <div class="space-y-4">
+                                <input type="text" id="newTitleTelugu" placeholder="Telugu Title" class="w-full bg-black border border-white/20 rounded-lg p-3 text-white" required>
+                                <input type="text" id="newTitleEnglish" placeholder="English Title" class="w-full bg-black border border-white/20 rounded-lg p-3 text-white" required>
+                                <textarea id="newLyricsTelugu" placeholder="Telugu Lyrics" rows="4" class="w-full bg-black border border-white/20 rounded-lg p-3 text-white" required></textarea>
+                                <textarea id="newLyricsEnglish" placeholder="English Lyrics" rows="4" class="w-full bg-black border border-white/20 rounded-lg p-3 text-white" required></textarea>
+                                <select id="newCategory" class="w-full bg-black border border-white/20 rounded-lg p-3 text-white">
+                                    <option>Worship</option><option>Prayer</option><option>Grace</option><option>Salvation</option><option>English</option>
+                                </select>
+                                <div class="flex gap-3">
+                                    <button type="submit" class="flex-1 bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition">Save Song</button>
+                                    <button type="button" onclick="closeAddForm()" class="flex-1 border border-white/20 py-3 rounded-lg hover:bg-white/10 transition">Cancel</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            document.getElementById('addFormPanel').classList.remove('hidden');
+        };
+
+        window.addNewSong = (e) => {
+            e.preventDefault();
+            const newSong = {
+                id: Date.now(),
+                titleTelugu: document.getElementById('newTitleTelugu').value,
+                titleEnglish: document.getElementById('newTitleEnglish').value,
+                lyricsTelugu: document.getElementById('newLyricsTelugu').value,
+                lyricsEnglish: document.getElementById('newLyricsEnglish').value,
+                category: document.getElementById('newCategory').value
+            };
+            songs.unshift(newSong);
+            closeAddForm();
+            renderSongList();
+            // Show success animation
+            const container = document.getElementById('songsContainer');
+            const firstCard = container.firstChild;
+            if (firstCard) firstCard.classList.add('adding');
+            setTimeout(() => firstCard?.classList.remove('adding'), 500);
+        };
+
+        window.closeAddForm = () => {
+            document.getElementById('addFormPanel').classList.add('hidden');
+        };
+
+        window.editSong = (id) => {
+            const song = songs.find(s => s.id === id);
+            if (!song) return;
+            const newTelugu = prompt("Edit Telugu Title:", song.titleTelugu);
+            if (newTelugu) song.titleTelugu = newTelugu;
+            const newEnglish = prompt("Edit English Title:", song.titleEnglish);
+            if (newEnglish) song.titleEnglish = newEnglish;
+            renderSongList();
+        };
+
+        window.deleteSong = (id) => {
+            const index = songs.findIndex(s => s.id === id);
+            if (index !== -1) {
+                songs.splice(index, 1);
+                renderSongList();
+            }
+        };
+
+        // Login function
+        window.login = () => {
+            const email = prompt("Enter email (admin@example.com for admin, user@example.com for normal user):");
+            if (email === "admin@example.com") {
+                currentUser = { email, role: "admin" };
+                isAdmin = true;
+                alert("✅ Logged in as ADMIN! You can add/delete songs.");
+            } else if (email && email.includes("@")) {
+                currentUser = { email, role: "user" };
+                isAdmin = false;
+                alert("✅ Logged in as USER! You can only view songs.");
+            } else {
+                alert("Invalid email!");
+                return;
+            }
+            renderSongList();
+            document.getElementById('authButtons').innerHTML = `
+                <span class="text-white mr-3">👋 ${currentUser.email}</span>
+                <button onclick="logout()" class="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition">Logout</button>
+            `;
+        };
+
+        window.logout = () => {
+            currentUser = null;
+            isAdmin = false;
+            renderSongList();
+            document.getElementById('authButtons').innerHTML = `
+                <button onclick="login()" class="px-4 py-2 bg-white text-black rounded-lg font-semibold hover:bg-gray-200 transition">
+                    <i class="fab fa-google mr-2"></i>Login
+                </button>
+            `;
+        };
+
+        function renderSongList() {
+            const filtered = songs.filter(song => 
+                song.titleTelugu.toLowerCase().includes(searchTerm) || 
+                song.titleEnglish.toLowerCase().includes(searchTerm)
+            );
+            
+            const container = document.getElementById('songsContainer');
+            if (container) {
+                container.innerHTML = filtered.map(song => SongBox({ 
+                    song, 
+                    onClick: () => showLyrics(song.id),
+                    onDelete: deleteSong,
+                    onEdit: editSong,
+                    isAdminMode: isAdmin
+                })).join('');
+            }
+        }
+
+        // Initial render
+        setTimeout(() => {
+            renderSongList();
+        }, 100);
+    }
+
+    // HTML Layout
+    document.getElementById('app').innerHTML = `
+        <div class="min-h-screen bg-black">
+            <!-- Navbar -->
+            <nav class="sticky top-0 bg-black/95 backdrop-blur-sm border-b border-white/10 z-40">
+                <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-music text-2xl text-white"></i>
+                        <h1 class="text-xl font-bold">Christian<span class="text-white/70">Lyrics</span></h1>
+                        ${isAdmin ? '<span class="ml-3 text-xs px-2 py-1 bg-red-600 rounded-full animate-pulse">ADMIN</span>' : ''}
+                    </div>
+                    <div class="flex gap-3 items-center">
+                        <div class="relative">
+                            <input type="text" id="searchInput" placeholder="Search songs..." class="bg-[#0a0a0a] border border-white/20 rounded-lg px-4 py-2 text-white w-64 focus:outline-none focus:border-white/50" onkeyup="searchSongs()">
+                            <i class="fas fa-search absolute right-3 top-3 text-gray-500"></i>
+                        </div>
+                        <div id="authButtons">
+                            <button onclick="login()" class="px-4 py-2 bg-white text-black rounded-lg font-semibold hover:bg-gray-200 transition">
+                                <i class="fab fa-google mr-2"></i>Login
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="max-w-7xl mx-auto px-4 py-8">
+                ${isAdmin ? `
+                    <div class="mb-8">
+                        <button onclick="showAddForm()" class="px-6 py-3 bg-white text-black rounded-lg font-semibold hover:bg-gray-200 transition transform hover:scale-105">
+                            <i class="fas fa-plus mr-2"></i>Add New Song
+                        </button>
+                    </div>
+                ` : ''}
+                
+                <!-- Song List - Scrollable boxes -->
+                <div id="songsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <!-- Songs will be loaded here -->
+                </div>
+            </main>
+
+            <!-- Lyrics Panel (Hidden by default) -->
+            <div id="lyricsPanel" class="hidden"></div>
+            
+            <!-- Add Form Panel (Hidden by default) -->
+            <div id="addFormPanel" class="hidden"></div>
+        </div>
+    `;
+
+    // Initialize app
+    renderApp();
+</script>
+
+</body>
+</html>
