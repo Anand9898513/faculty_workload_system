@@ -59,12 +59,17 @@ app.use((req, res) => {
 // ── Start Server ────────────────────────────────────────────────
 mongoose.connect(MONGODB_URI)
   .then(() => {
-    console.log('✅ Connected to MongoDB');
+    console.log('✅ MongoDB Connected');
+
+    seedDatabase();
+
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
   })
-  .catch(err => console.error('❌ MongoDB error:', err));
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err);
+  });
 // ── Seed Database ───────────────────────────────────────────────
 async function seedDatabase() {
   const User    = require('./models/User');
