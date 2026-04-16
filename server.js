@@ -8,15 +8,10 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/faculty_workload_db';
+const MONGODB_URI = process.env.MONGO_URI;
 
 // ── Connect to MongoDB ──────────────────────────────────────────
-mongoose.connect(MONGODB_URI)
-  .then(() => {
-    console.log('✅ Connected to MongoDB:', MONGODB_URI);
-    seedDatabase();
-  })
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+
 
 // ── Middleware ──────────────────────────────────────────────────
 app.use(express.json());
