@@ -12,7 +12,9 @@ const MONGODB_URI = process.env.MONGO_URI;
 
 // ── Connect to MongoDB ──────────────────────────────────────────
 
-
+mongoose.connection.once("open", () => {
+  console.log("🔥 DB NAME:", mongoose.connection.name);
+});
 // ── Middleware ──────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
