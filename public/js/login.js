@@ -30,10 +30,20 @@ document.getElementById('loginForm').addEventListener('submit', async function (
     const data = await res.json();
 
     if (data.success) {
-      window.location.href = '/dashboard';
+
+      // 🔥 ROLE BASED REDIRECT
+      if (data.role === 'admin' || data.role === 'hod') {
+        window.location.href = '/dashboard';
+      } else if (data.role === 'faculty') {
+        window.location.href = '/faculty';
+      } else {
+        window.location.href = '/';
+      }
+
     } else {
       showError(data.message || 'Invalid credentials. Please try again.');
     }
+
   } catch (err) {
     showError('Connection error. Please try again.');
   } finally {
